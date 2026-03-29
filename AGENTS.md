@@ -422,6 +422,143 @@ Notes:
 - Do not treat `SmartFoundation.Database` as authoritative proof of the live database
 - Do not remove `CrudController` plumbing unless the task explicitly replaces the whole contract
 
+## Spec-Kit Integration (Fork Only)
+
+This fork uses [spec-kit](https://github.com/github/spec-kit) (GitHub's Spec-Driven Development toolkit) on a dedicated branch. Spec-kit files must never reach the upstream repository.
+
+### Branch Layout
+
+| Branch | Purpose | Remote | Contains spec-kit? |
+|---|---|---|---|
+| `main` | Code and upstream sync | `origin` + `upstream` | No |
+| `spec-kit` | Spec-kit files only | `origin` only | Yes |
+
+- `origin` = `AbdulazizFF/SmartFoundation` (your fork)
+- `upstream` = `ProgrammingSectionKFMC/SmartFoundation` (upstream)
+
+### What Lives On Each Branch
+
+**`spec-kit` branch contains (in addition to everything on `main`):**
+
+- `.specify/` - spec-kit config, templates, memory, extensions, presets
+- `.opencode/command/speckit.*` - slash commands for opencode agent
+- `.specify/scripts/powershell/` - helper scripts (PowerShell, since this is Windows)
+
+**`main` branch safety net in `.gitignore`:**
+
+The following paths are gitignored on `main` to prevent accidental inclusion:
+
+```gitignore
+.specify/
+.opencode/command/speckit*
+.claude/commands/speckit*
+.cursor/commands/speckit*
+scripts/speckit*
+scripts/specify*
+.genreleases/
+```
+
+### Working With Spec-Kit
+
+**Using git worktree (recommended):**
+
+```powershell
+git clone https://github.com/AbdulazizFF/SmartFoundation.git
+cd SmartFoundation
+git remote add upstream https://github.com/ProgrammingSectionKFMC/SmartFoundation.git
+git fetch origin
+git worktree add ..\SmartFoundation-specs spec-kit
+```
+
+This gives two directories sharing one `.git`:
+
+- `SmartFoundation\` - on `main`, for code work
+- `SmartFoundation-specs\` - on `spec-kit`, for spec-driven development
+
+**Or by switching branches:**
+
+```powershell
+git checkout spec-kit
+# use /speckit.* commands...
+git checkout main
+# back to code work
+```
+
+### Spec-Kit Slash Commands
+
+When on the `spec-kit` branch with opencode, these commands are available:
+
+- `/speckit.constitution` - Create or update project principles
+- `/speckit.specify` - Define what to build (requirements)
+- `/speckit.plan` - Create technical implementation plan
+- `/speckit.tasks` - Generate actionable task list
+- `/speckit.implement` - Execute tasks
+- `/speckit.clarify` - Clarify underspecified areas (optional)
+- `/speckit.analyze` - Cross-artifact consistency analysis (optional)
+- `/speckit.checklist` - Quality checklists (optional)
+
+### Spec-Kit Workflow
+
+1. Switch to `spec-kit` branch (or use worktree)
+2. Run `/speckit.constitution` to establish project principles
+3. Run `/speckit.specify` with feature requirements
+4. Run `/speckit.plan` with tech stack choices
+5. Run `/speckit.tasks` to break down work
+6. Run `/speckit.implement` to execute
+7. Commit spec artifacts to `spec-kit` branch only
+
+### Syncing Upstream Changes
+
+```powershell
+git checkout main
+git fetch upstream
+git merge upstream/main
+git push origin main
+
+# Rebase spec-kit onto updated main
+git checkout spec-kit
+git rebase main
+git push origin spec-kit
+```
+
+### Creating PRs To Upstream
+
+Always create PR branches from `main`, never from `spec-kit`:
+
+```powershell
+git checkout main
+git checkout -b feature/my-change
+# make code changes only
+git push origin feature/my-change
+# PR: AbdulazizFF:feature/my-change -> ProgrammingSectionKFMC:main
+```
+
+### Spec-Kit CLI
+
+Installed via `uv`:
+
+```powershell
+# Install (one-time per machine)
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@v0.4.3
+
+# Verify
+specify check
+
+# Upgrade
+uv tool install specify-cli --force --from git+https://github.com/github/spec-kit.git@v0.4.3
+```
+
+Note: On Windows, run specify CLI with `NO_COLOR=1 PYTHONIOENCODING=utf-8` to avoid Unicode banner errors.
+
+### Rules For Agents
+
+- Never commit spec-kit files (`.specify/`, `.opencode/command/speckit*`) to `main`
+- Never include spec-kit files in PRs targeting upstream
+- Spec-kit work happens on the `spec-kit` branch only
+- If you see `.specify/` in the working tree on `main`, do not `git add` it
+- When rebasing `spec-kit` onto `main`, resolve conflicts in favor of keeping spec-kit files
+- The `spec-kit` branch should always be based on the latest `main`
+
 ## Final Rule
 
 If you are working on a feature that looks like Housing, copy the Housing style first.

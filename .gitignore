@@ -411,3 +411,13 @@ docs/PRD.md
 
 /SmartFoundation.Mvc/Controllers/MastersCrudController.cs
 /SmartFoundation.Mvc/AiModels/qwen2.5-3b-instruct-q4_k_m.gguf
+
+# Spec-Kit (fork-only branch: origin/spec-kit)
+# These files must never reach upstream (ProgrammingSectionKFMC)
+.specify/
+.opencode/command/speckit*
+.claude/commands/speckit*
+.cursor/commands/speckit*
+scripts/speckit*
+scripts/specify*
+.genreleases/
